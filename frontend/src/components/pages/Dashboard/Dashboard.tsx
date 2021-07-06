@@ -55,12 +55,14 @@ function useDashboard(params: { year: number }) {
         return axios
             .get<unknown>(endpoint(`reports/${params.year}`))
             .then((response) => {
-                if (!resType.is(response)) {
+                if(!response.data){
+                    throw new Error("Error");
+                }
+                if (!resType.is(response.data)) {
                     console.error(PathReporter.report(resType.decode(response)).join(", "));
                     throw new Error("Error");
                 }
-
-                setState({ type: "Resolved", report: response, isRefreshing: false });
+                setState({ type: "Resolved", report: response.data, isRefreshing: false });
             })
             .catch(() => {
                 setState({ type: "Rejected", error: "Error" });
@@ -83,7 +85,7 @@ const Dashboard = () => {
         case "Rejected":
             return <ErrorView message={state.error} onClickRetry={actions.fetchReport} />;
         case "Resolved":
-            return <TableView {...state} />;
+            return <TableView {...state} {...actions} />;
         default:
             assertNever(state);
             return <></>;

@@ -11,7 +11,6 @@ interface Report {
 }
 
 export const getReport = async (req: Request, res: Response) => {
-
     const sql = `
         SELECT
             caregiver.id      AS caregiver_id,
@@ -22,9 +21,10 @@ export const getReport = async (req: Request, res: Response) => {
         FROM caregiver
         JOIN visit ON visit.caregiver = caregiver.id
         JOIN patient ON patient.id = visit.patient
+        WHERE EXTRACT(YEAR FROM visit.date) = ${req.params.year}
     `;
-    
-    let result : QueryResult;
+
+    let result: QueryResult;
     try {
         result = await dbUtil.sqlToDB(sql, []);
         const report: Report = {
@@ -32,11 +32,16 @@ export const getReport = async (req: Request, res: Response) => {
             caregivers: []
         };
 
-        for ( let row of result.rows) {
-            report.caregivers.push({
-                name: row.caregiver_name,
-                patients: [row.patient_name]
-            })
+        for (let row of result.rows) {
+            if (report.caregivers.some(obj => obj.name == row.caregiver_name)) {
+                let idx = report.caregivers.findIndex(obj => obj.name == row.caregiver_name);
+                report.caregivers[idx].patients.push(row.patient_name);
+            } else {
+                report.caregivers.push({
+                    name: row.caregiver_name,
+                    patients: [row.patient_name]
+                })
+            }
         }
         res.status(200).json(report);
     } catch (error) {

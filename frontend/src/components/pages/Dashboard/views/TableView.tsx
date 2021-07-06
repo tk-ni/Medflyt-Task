@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components/macro";
 import { ReactComponent as MedFlytLogo } from "../../../../assets/logo.svg";
 import { ReactComponent as RefreshIcon } from "../../../../assets/refresh.svg";
@@ -13,6 +13,7 @@ import { Report } from "../Dashboard";
 
 interface Props {
     report: Report;
+    fetchReport: Function;
     isRefreshing: boolean;
 }
 
@@ -36,7 +37,25 @@ const StyledTableView = styled.div`
 
 const { Table, Tr, Th, Td } = TableBlocks;
 
+const refreshRef: React.Ref<any> = React.createRef();
+let timeoutHandler: NodeJS.Timeout;
 const TableView = (props: Props) => {
+
+    const handleRefreshButtonClick = () =>{
+        clearTimeout(timeoutHandler);
+        refreshRef.current.disabled = true;
+        props.fetchReport();
+        timeoutHandler = setTimeout(()=>{
+            refreshRef.current.disabled = false;
+        }, 2000);
+    }
+
+    useEffect(()=>{ //Handling unmount
+        return () =>{
+            clearTimeout(timeoutHandler);
+        }
+    }, [])
+    
     return (
         <StyledTableView>
             <RefreshIndicator isRefreshing={props.isRefreshing} />
@@ -45,7 +64,7 @@ const TableView = (props: Props) => {
                 <PrimaryText>Year {props.report.year} - caregivers report</PrimaryText>
             </Header>
             <Row justifyContent="flex-end">
-                <Button>
+                <Button onClick={handleRefreshButtonClick} ref={refreshRef}>
                     <RefreshIcon />
                     <span>Refresh</span>
                 </Button>
@@ -63,7 +82,7 @@ const TableView = (props: Props) => {
                             <Td>{caregiver.name}</Td>
                             <Td>
                                 {caregiver.patients.length > 0 ? (
-                                    caregiver.patients
+                                    caregiver.patients.join(', ')
                                 ) : (
                                     <None />
                                 )}
