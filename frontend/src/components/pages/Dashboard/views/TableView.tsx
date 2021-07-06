@@ -42,12 +42,19 @@ let timeoutHandler: NodeJS.Timeout;
 const TableView = (props: Props) => {
 
     const handleRefreshButtonClick = () =>{
+        clearTimeout(timeoutHandler);
         refreshRef.current.disabled = true;
         props.fetchReport();
         timeoutHandler = setTimeout(()=>{
             refreshRef.current.disabled = false;
         }, 2000);
     }
+
+    useEffect(()=>{ //Handling unmount
+        return () =>{
+            clearTimeout(timeoutHandler);
+        }
+    }, [])
     
     return (
         <StyledTableView>
