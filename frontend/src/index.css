@@ -13,3 +13,8 @@ body {
     background-attachment: fixed;
     color: #fff;
 }
+
+button:disabled{
+    opacity: .5;
+    cursor: default;
+}
