@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components/macro";
 import { ReactComponent as MedFlytLogo } from "../../../../assets/logo.svg";
 import { ReactComponent as RefreshIcon } from "../../../../assets/refresh.svg";
@@ -63,7 +63,7 @@ const TableView = (props: Props) => {
                             <Td>{caregiver.name}</Td>
                             <Td>
                                 {caregiver.patients.length > 0 ? (
-                                    caregiver.patients
+                                    caregiver.patients.join(', ')
                                 ) : (
                                     <None />
                                 )}
